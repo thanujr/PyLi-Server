@@ -2,8 +2,7 @@ import socket
 import sys
 import os
 
-
-WEBDIRECTORY = 'www'
+import RequestHandler
 
 
 def createServerSocket():
@@ -11,31 +10,6 @@ def createServerSocket():
     listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     return listenSocket
-
-
-def handleGETMethod(path):
-    resourcePath = WEBDIRECTORY + path
-
-    if os.path.exists(resourcePath):
-        try:
-            header = 'HTTP/1.1 200 OK\r\n' + 'Content-Type: text/html\r\n\r\n'
-            content = open(resourcePath, 'rb').read()
-        except:
-            header = 'HTTP/1.1 404 NotFound\r\n\r\n'
-            content = 'Content Not Found!'
-    else:
-        header = 'HTTP/1.1 404 NotFound\r\n\r\n'
-        content = 'Content Not Found!'
-
-    return header + content
-
-
-def handleHEADMethod():
-    pass
-
-
-def handlePOSTMethod():
-    pass
 
 
 def serverStart(listenSocket, hostname, port):
@@ -50,15 +24,26 @@ def serverStart(listenSocket, hostname, port):
 
         print request
 
-        getLine = request.splitlines()[0]
-        (method, path, version) = getLine.split()
+        try:
+            getLine = request.splitlines()[0]
+            (method, path, version) = getLine.split()
 
-        if(method == 'GET'):
-            response = handleGETMethod(path)
+            rqstHandle = RequestHandler.RequestHandler()
 
+            if(method == 'GET'):
+                response = rqstHandle.handleGETMethod(path)
 
-        clientSocket.sendall(response)
-        clientSocket.close()
+            if(method == 'HEAD'):
+                response = rqstHandle.handleHEADMethod(path)
+
+            if(method == 'POST'):
+                response = rqstHandle.handlePOSTMethod(request)
+
+            clientSocket.sendall(response)
+            clientSocket.close()
+
+        except:
+            clientSocket.close()
 
 
 def main():
