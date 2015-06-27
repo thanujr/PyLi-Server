@@ -38,4 +38,17 @@ class RequestHandler:
 
     def handlePOSTMethod(self, request):
         postBody = request.split("\r\n\r\n")[1]
-        return postBody.split('&')
+        params = postBody.split('&')
+
+
+        postParams = {}
+        content = 'POST Data: '
+
+        for item in params:
+            content += item
+            content += ','
+
+
+        header = 'HTTP/1.1 200 OK\r\n' + 'Content-Type: text/html\r\n\r\n'
+
+        return header + content
