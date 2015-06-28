@@ -1,6 +1,7 @@
 import socket
 import sys
 import os
+import time
 
 import RequestHandler
 
@@ -11,6 +12,31 @@ def createServerSocket():
 
     return listenSocket
 
+def handleRequest(clientSocket):
+    request = clientSocket.recv(1024)
+    try:
+        getLine = request.splitlines()[0]
+        (method, path, version) = getLine.split()
+
+        rqstHandle = RequestHandler.RequestHandler()
+
+        if(method == 'GET'):
+            response = rqstHandle.handleGETMethod(path)
+
+        if(method == 'HEAD'):
+            response = rqstHandle.handleHEADMethod(path)
+
+        if(method == 'POST'):
+            response = rqstHandle.handlePOSTMethod(request)
+
+        clientSocket.sendall(response)
+
+        clientSocket.close()
+
+    except:
+        clientSocket.close()
+
+
 
 def serverStart(listenSocket, hostname, port):
     listenSocket.bind((hostname, port))
@@ -20,29 +46,13 @@ def serverStart(listenSocket, hostname, port):
 
     while True:
         clientSocket, clientAddress = listenSocket.accept()
-        request = clientSocket.recv(1024)
 
-        print request
-
-        try:
-            getLine = request.splitlines()[0]
-            (method, path, version) = getLine.split()
-
-            rqstHandle = RequestHandler.RequestHandler()
-
-            if(method == 'GET'):
-                response = rqstHandle.handleGETMethod(path)
-
-            if(method == 'HEAD'):
-                response = rqstHandle.handleHEADMethod(path)
-
-            if(method == 'POST'):
-                response = rqstHandle.handlePOSTMethod(request)
-
-            clientSocket.sendall(response)
-            clientSocket.close()
-
-        except:
+        pid = os.fork()
+        if pid == 0:
+            listenSocket.close()
+            handleRequest(clientSocket)
+            os._exit(0)
+        else:
             clientSocket.close()
 
 
