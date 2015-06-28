@@ -1,9 +1,19 @@
 import socket
 import sys
 import os
-import time
+import ConfigParser
 
 import RequestHandler
+
+
+def parseConfigs(configFile):
+    configMap = {}
+    config = ConfigParser.ConfigParser()
+    config.read(configFile)
+    configMap.update({'webdir':config.get('Webdirectory', 'directory')})
+    configMap.update({'host':config.get('Host', 'hostname')})
+    configMap.update({'port':config.get('Port', 'listenport')})
+    return configMap
 
 
 def createServerSocket():
@@ -12,13 +22,13 @@ def createServerSocket():
 
     return listenSocket
 
-def handleRequest(clientSocket):
+def handleRequest(clientSocket, configs):
     request = clientSocket.recv(1024)
     try:
         getLine = request.splitlines()[0]
         (method, path, version) = getLine.split()
 
-        rqstHandle = RequestHandler.RequestHandler()
+        rqstHandle = RequestHandler.RequestHandler(configs)
 
         if(method == 'GET'):
             response = rqstHandle.handleGETMethod(path)
@@ -38,7 +48,10 @@ def handleRequest(clientSocket):
 
 
 
-def serverStart(listenSocket, hostname, port):
+def serverStart(listenSocket, configs):
+    hostname = configs['host']
+    port = int(configs['port'])
+
     listenSocket.bind((hostname, port))
     listenSocket.listen(5)
 
@@ -50,18 +63,17 @@ def serverStart(listenSocket, hostname, port):
         pid = os.fork()
         if pid == 0:
             listenSocket.close()
-            handleRequest(clientSocket)
+            handleRequest(clientSocket, configs)
             os._exit(0)
         else:
             clientSocket.close()
 
 
 def main():
-    args = sys.argv[1:]
+    serverSocket = createServerSocket()
+    configs = parseConfigs('pyli.conf')
 
-    if len(args) == 2:
-        serverSocket = createServerSocket()
-        serverStart(serverSocket, args[0], int(args[1]))
+    serverStart(serverSocket, configs)
 
 
 if __name__ == '__main__':

@@ -3,9 +3,8 @@ import os
 
 class RequestHandler:
 
-    def __init__(self):
-        self.webDirectory = 'www'
-        pass
+    def __init__(self, configs):
+        self.webDirectory = configs['webdir']
 
     def handleGETMethod(self, path):
         resourcePath = self.webDirectory + path
