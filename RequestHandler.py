@@ -15,10 +15,10 @@ class RequestHandler:
                 content = open(resourcePath, 'rb').read()
             except:
                 header = 'HTTP/1.1 404 NotFound\r\n\r\n'
-                content = 'Content Not Found!'
+                content = '<html><body><h1>File Not Found.</h1></body></html>'
         else:
             header = 'HTTP/1.1 404 NotFound\r\n\r\n'
-            content = 'Content Not Found!'
+            content = '<html><body><h1>File Not Found.</h1></body></html>'
 
         return header + content
 
@@ -39,8 +39,6 @@ class RequestHandler:
         postBody = request.split("\r\n\r\n")[1]
         params = postBody.split('&')
 
-
-        postParams = {}
         content = 'POST Data: '
 
         for item in params:
@@ -51,3 +49,7 @@ class RequestHandler:
         header = 'HTTP/1.1 200 OK\r\n' + 'Content-Type: text/html\r\n\r\n'
 
         return header + content
+
+
+    def throwBadRequestError(self):
+        return 'HTTP/1.1 400 Bad Request\r\n'

@@ -19,7 +19,6 @@ class Server:
         configMap.update({'port':config.get('Port', 'listenport')})
         return configMap
 
-
     def createServerSocket(self):
         listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -28,11 +27,12 @@ class Server:
 
     def handleRequest(self, clientSocket):
         request = clientSocket.recv(1024)
+
+        rqstHandle = RequestHandler.RequestHandler(self.configs)
+
         try:
             getLine = request.splitlines()[0]
             (method, path, version) = getLine.split()
-
-            rqstHandle = RequestHandler.RequestHandler(self.configs)
 
             if(method == 'GET'):
                 response = rqstHandle.handleGETMethod(path)
@@ -44,10 +44,10 @@ class Server:
                 response = rqstHandle.handlePOSTMethod(request)
 
             clientSocket.sendall(response)
-
             clientSocket.close()
 
         except:
+            clientSocket.send(rqstHandle.throwBadRequestError())
             clientSocket.close()
 
 
@@ -74,7 +74,10 @@ class Server:
 
 
 
-### Start the main program.
+
+##############################################
+### Start the main program.###################
+###############################################
 def main():
     server = Server()
     serverSocket = server.createServerSocket()
