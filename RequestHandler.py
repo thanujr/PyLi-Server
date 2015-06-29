@@ -14,8 +14,8 @@ class RequestHandler:
                 header = 'HTTP/1.1 200 OK\r\n' + 'Content-Type: text/html\r\n\r\n'
                 content = open(resourcePath, 'rb').read()
             except:
-                header = 'HTTP/1.1 404 NotFound\r\n\r\n'
-                content = '<html><body><h1>File Not Found.</h1></body></html>'
+                header = 'HTTP/1.1 500 Internal Server Error\r\n\r\n'
+                content = '<html><body><h1>Internal Server Error</h1></body></html>'
         else:
             header = 'HTTP/1.1 404 NotFound\r\n\r\n'
             content = '<html><body><h1>File Not Found.</h1></body></html>'
@@ -29,7 +29,7 @@ class RequestHandler:
             try:
                 header = 'HTTP/1.1 200 OK\r\n' + 'Content-Type: text/html\r\n\r\n'
             except:
-                header = 'HTTP/1.1 404 NotFound\r\n\r\n'
+                header = 'HTTP/1.1 500 Internal Server Error\r\n\r\n'
         else:
             header = 'HTTP/1.1 404 NotFound\r\n\r\n'
 
